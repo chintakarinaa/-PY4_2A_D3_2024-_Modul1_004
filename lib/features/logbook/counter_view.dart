@@ -16,6 +16,17 @@ class _CounterViewState extends State<CounterView> {
   final TextEditingController _stepController =
       TextEditingController(text: '1');
 
+  @override
+  void initState() {
+    super.initState();
+    _initialize();
+  }
+
+  Future<void> _initialize() async {
+    await _controller.loadData();
+    setState(() {});
+  }
+
   void _showResetDialog() {
     showDialog(
       context: context,
@@ -28,8 +39,9 @@ class _CounterViewState extends State<CounterView> {
             child: const Text("Batal"),
           ),
           ElevatedButton(
-            onPressed: () {
-              setState(() => _controller.reset());
+            onPressed: () async {
+              await _controller.reset(widget.username);
+              setState(() {});
               Navigator.pop(context);
             },
             child: const Text("Ya, Reset"),
@@ -50,9 +62,9 @@ class _CounterViewState extends State<CounterView> {
   }
 
   Color _getHistoryColor(String text) {
-    if (text.contains("Tambah")) {
+    if (text.contains("menambah")) {
       return Colors.green;
-    } else if (text.contains("Kurang")) {
+    } else if (text.contains("mengurangi")) {
       return Colors.red;
     } else {
       return Colors.grey;
@@ -80,9 +92,7 @@ class _CounterViewState extends State<CounterView> {
               '${_controller.value}',
               style: const TextStyle(fontSize: 40),
             ),
-
             const SizedBox(height: 20),
-
             TextField(
               controller: _stepController,
               keyboardType: TextInputType.number,
@@ -95,21 +105,23 @@ class _CounterViewState extends State<CounterView> {
                 _controller.setStep(step);
               },
             ),
-
             const SizedBox(height: 20),
-
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 ElevatedButton(
-                  onPressed: () =>
-                      setState(() => _controller.decrement()),
+                  onPressed: () async {
+                    await _controller.decrement(widget.username);
+                    setState(() {});
+                  },
                   child: const Text("-"),
                 ),
                 const SizedBox(width: 10),
                 ElevatedButton(
-                  onPressed: () =>
-                      setState(() => _controller.increment()),
+                  onPressed: () async {
+                    await _controller.increment(widget.username);
+                    setState(() {});
+                  },
                   child: const Text("+"),
                 ),
                 const SizedBox(width: 10),
@@ -119,12 +131,9 @@ class _CounterViewState extends State<CounterView> {
                 ),
               ],
             ),
-
             const SizedBox(height: 30),
             const Text("Riwayat Aktivitas"),
-
             const SizedBox(height: 10),
-
             Expanded(
               child: ListView(
                 children: _controller.history.map((item) {
