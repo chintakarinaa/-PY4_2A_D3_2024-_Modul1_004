@@ -22,7 +22,6 @@ class CounterController {
 
     _history.add('[$time] $message');
 
-    // Batasin 5 data terakhir
     if (_history.length > 5) {
       _history.removeAt(0);
     }
