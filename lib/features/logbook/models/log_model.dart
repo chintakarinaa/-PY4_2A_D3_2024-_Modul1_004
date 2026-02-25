@@ -1,27 +1,31 @@
 class LogModel {
   final String title;
-  final String date;
   final String description;
+  final String date;
+  final String category;
 
   LogModel({
     required this.title,
-    required this.date,
     required this.description,
+    required this.date,
+    required this.category,
   });
 
   factory LogModel.fromMap(Map<String, dynamic> map) {
     return LogModel(
       title: map['title'],
-      date: map['date'],
       description: map['description'],
+      date: map['date'],
+      category: map['category'],
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
       'title': title,
-      'date': date,
       'description': description,
+      'date': date,
+      'category': category,
     };
   }
 }

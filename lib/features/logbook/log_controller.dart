@@ -5,6 +5,7 @@ import 'models/log_model.dart';
 
 class LogController {
   final ValueNotifier<List<LogModel>> logsNotifier = ValueNotifier([]);
+  final ValueNotifier<List<LogModel>> filteredLogs = ValueNotifier([]);
 
   static const String _storageKey = 'user_logs_data';
 
@@ -12,37 +13,52 @@ class LogController {
     loadFromDisk();
   }
 
-  void addLog(String title, String desc) {
-    if (title.isEmpty || desc.isEmpty) return;
-
+  void addLog(String title, String desc, String category) {
     final newLog = LogModel(
       title: title,
       description: desc,
       date: DateTime.now().toString(),
+      category: category,
     );
 
     logsNotifier.value = [...logsNotifier.value, newLog];
+    filteredLogs.value = logsNotifier.value;
     saveToDisk();
   }
 
-  void updateLog(int index, String title, String desc) {
+  void updateLog(int index, String title, String desc, String category) {
     final current = List<LogModel>.from(logsNotifier.value);
 
     current[index] = LogModel(
       title: title,
       description: desc,
       date: DateTime.now().toString(),
+      category: category,
     );
 
     logsNotifier.value = current;
+    filteredLogs.value = current;
     saveToDisk();
   }
 
   void removeLog(int index) {
     final current = List<LogModel>.from(logsNotifier.value);
     current.removeAt(index);
+
     logsNotifier.value = current;
+    filteredLogs.value = current;
     saveToDisk();
+  }
+
+  void searchLog(String query) {
+    if (query.isEmpty) {
+      filteredLogs.value = logsNotifier.value;
+    } else {
+      filteredLogs.value = logsNotifier.value
+          .where((log) =>
+              log.title.toLowerCase().contains(query.toLowerCase()))
+          .toList();
+    }
   }
 
   Future<void> saveToDisk() async {
@@ -59,8 +75,11 @@ class LogController {
 
     if (data != null) {
       final decoded = jsonDecode(data) as List;
-      logsNotifier.value =
+      final logs =
           decoded.map((e) => LogModel.fromMap(e)).toList();
+
+      logsNotifier.value = logs;
+      filteredLogs.value = logs;
     }
   }
 }

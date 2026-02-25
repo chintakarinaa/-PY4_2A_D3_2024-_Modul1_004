@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../auth/login_view.dart';
 import 'log_controller.dart';
-import 'widgets/log_item_widget.dart';
 import 'models/log_model.dart';
+import 'widgets/log_item_widget.dart';
 
 class LogView extends StatefulWidget {
   const LogView({super.key});
@@ -14,18 +14,23 @@ class LogView extends StatefulWidget {
 class _LogViewState extends State<LogView> {
   final LogController _controller = LogController();
 
-  final TextEditingController _titleController =
-      TextEditingController();
-  final TextEditingController _contentController =
-      TextEditingController();
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _descController = TextEditingController();
+
+  String _selectedCategory = "Pribadi";
+
+  final List<String> _categories = [
+    "Pekerjaan",
+    "Pribadi",
+    "Urgent",
+  ];
 
   void _confirmLogout() {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
         title: const Text("Konfirmasi Logout"),
-        content:
-            const Text("Apakah kamu yakin ingin keluar?"),
+        content: const Text("Yakin ingin keluar?"),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -36,9 +41,7 @@ class _LogViewState extends State<LogView> {
               Navigator.pop(context);
               Navigator.pushAndRemoveUntil(
                 context,
-                MaterialPageRoute(
-                  builder: (_) => const LoginView(),
-                ),
+                MaterialPageRoute(builder: (_) => const LoginView()),
                 (route) => false,
               );
             },
@@ -59,29 +62,41 @@ class _LogViewState extends State<LogView> {
           children: [
             TextField(
               controller: _titleController,
-              decoration:
-                  const InputDecoration(hintText: "Judul"),
+              decoration: const InputDecoration(hintText: "Judul"),
             ),
             TextField(
-              controller: _contentController,
-              decoration:
-                  const InputDecoration(hintText: "Deskripsi"),
+              controller: _descController,
+              decoration: const InputDecoration(hintText: "Deskripsi"),
+            ),
+            const SizedBox(height: 10),
+            DropdownButtonFormField(
+              value: _selectedCategory,
+              items: _categories
+                  .map((cat) => DropdownMenuItem(
+                        value: cat,
+                        child: Text(cat),
+                      ))
+                  .toList(),
+              onChanged: (value) {
+                _selectedCategory = value!;
+              },
+              decoration: const InputDecoration(labelText: "Kategori"),
             ),
           ],
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Batal"),
-          ),
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Batal")),
           ElevatedButton(
             onPressed: () {
               _controller.addLog(
                 _titleController.text,
-                _contentController.text,
+                _descController.text,
+                _selectedCategory,
               );
               _titleController.clear();
-              _contentController.clear();
+              _descController.clear();
               Navigator.pop(context);
             },
             child: const Text("Simpan"),
@@ -93,7 +108,8 @@ class _LogViewState extends State<LogView> {
 
   void _showEditDialog(int index, LogModel log) {
     _titleController.text = log.title;
-    _contentController.text = log.description;
+    _descController.text = log.description;
+    _selectedCategory = log.category;
 
     showDialog(
       context: context,
@@ -103,23 +119,34 @@ class _LogViewState extends State<LogView> {
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(controller: _titleController),
-            TextField(controller: _contentController),
+            TextField(controller: _descController),
+            const SizedBox(height: 10),
+            DropdownButtonFormField(
+              value: _selectedCategory,
+              items: _categories
+                  .map((cat) => DropdownMenuItem(
+                        value: cat,
+                        child: Text(cat),
+                      ))
+                  .toList(),
+              onChanged: (value) {
+                _selectedCategory = value!;
+              },
+            ),
           ],
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Batal"),
-          ),
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Batal")),
           ElevatedButton(
             onPressed: () {
               _controller.updateLog(
                 index,
                 _titleController.text,
-                _contentController.text,
+                _descController.text,
+                _selectedCategory,
               );
-              _titleController.clear();
-              _contentController.clear();
               Navigator.pop(context);
             },
             child: const Text("Update"),
@@ -132,7 +159,7 @@ class _LogViewState extends State<LogView> {
   @override
   void dispose() {
     _titleController.dispose();
-    _contentController.dispose();
+    _descController.dispose();
     super.dispose();
   }
 
@@ -148,30 +175,86 @@ class _LogViewState extends State<LogView> {
           ),
         ],
       ),
-      body: ValueListenableBuilder<List<LogModel>>(
-        valueListenable: _controller.logsNotifier,
-        builder: (context, logs, _) {
-          if (logs.isEmpty) {
-            return const Center(
-              child: Text("Belum ada catatan."),
-            );
-          }
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: TextField(
+              onChanged: (value) => _controller.searchLog(value),
+              decoration: const InputDecoration(
+                labelText: "Cari Catatan...",
+                prefixIcon: Icon(Icons.search),
+              ),
+            ),
+          ),
+          Expanded(
+            child: ValueListenableBuilder<List<LogModel>>(
+              valueListenable: _controller.filteredLogs,
+              builder: (context, logs, _) {
+                if (logs.isEmpty) {
+                  return LayoutBuilder(
+                    builder: (context, constraints) {
+                      return Column(
+                        children: [
+                          SizedBox(height: constraints.maxHeight * 0.12),
+                          Image.asset(
+                            "assets/images/noteskosong.png",
+                            height: constraints.maxHeight * 0.45,
+                          ),
+                          const SizedBox(height: 20),
+                          const Text(
+                            "Belum ada catatan",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: Color.fromARGB(255, 101, 61, 153),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                }
 
-          return ListView.builder(
-            itemCount: logs.length,
-            itemBuilder: (context, index) {
-              final log = logs[index];
+                return ListView.builder(
+                  itemCount: logs.length,
+                  itemBuilder: (context, index) {
+                    final log = logs[index];
 
-              return LogItemWidget(
-                log: log,
-                onEdit: () =>
-                    _showEditDialog(index, log),
-                onDelete: () =>
-                    _controller.removeLog(index),
-              );
-            },
-          );
-        },
+                    return Dismissible(
+                      key: Key(log.date),
+                      direction: DismissDirection.endToStart,
+                      background: Container(
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
+                        padding: const EdgeInsets.only(right: 20),
+                        alignment: Alignment.centerRight,
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.delete,
+                            color: Colors.white, size: 28),
+                      ),
+                      onDismissed: (_) {
+                        _controller.removeLog(index);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content: Text("Catatan dihapus")),
+                        );
+                      },
+                      child: LogItemWidget(
+                        log: log,
+                        onEdit: () =>
+                            _showEditDialog(index, log),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddDialog,
