@@ -16,9 +16,9 @@ class LogItemWidget extends StatelessWidget {
       case "Pekerjaan":
         return Colors.deepPurple;
       case "Urgent":
-        return const Color.fromARGB(255, 105, 13, 167);
+        return const Color(0xFF690DA7);
       default:
-        return const Color.fromARGB(255, 186, 149, 255);
+        return const Color(0xFF6A5AE0);
     }
   }
 
@@ -26,58 +26,82 @@ class LogItemWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = _getCategoryColor(log.category);
 
-    return Card(
-      color: color,
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white, 
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: color, 
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          )
+        ],
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: color,
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
                 log.category,
-                style: TextStyle(
-                  color: color,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ),
+
             const SizedBox(height: 8),
 
-            Text(
-              log.title,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    log.title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black, 
+                    ),
+                  ),
+                ),
+                IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  icon: Icon(
+                    Icons.edit,
+                    size: 20,
+                    color: color, 
+                  ),
+                  onPressed: onEdit,
+                ),
+              ],
             ),
 
-            const SizedBox(height: 6),
+            const SizedBox(height: 4),
 
             Text(
               log.description,
               style: const TextStyle(
-                fontSize: 14,
-                color: Colors.white,
+                fontSize: 13,
+                color: Colors.black87, 
               ),
             ),
-
-            const SizedBox(height: 8),
-
-            Align(
-              alignment: Alignment.centerRight,
-              child: IconButton(
-                icon: const Icon(Icons.edit, color: Colors.white),
-                onPressed: onEdit,
-              ),
-            )
           ],
         ),
       ),

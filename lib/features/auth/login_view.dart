@@ -40,7 +40,7 @@ class _LoginViewState extends State<LoginView> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) => const LogView(),
+          builder: (_) => LogView(username: username), 
         ),
       );
     } else {
@@ -56,6 +56,7 @@ class _LoginViewState extends State<LoginView> {
         );
 
         Timer(const Duration(seconds: 10), () {
+          if (!mounted) return;
           setState(() {
             _isDisabled = false;
           });
@@ -69,6 +70,13 @@ class _LoginViewState extends State<LoginView> {
         );
       }
     }
+  }
+
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 
   @override
