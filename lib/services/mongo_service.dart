@@ -16,62 +16,36 @@ class MongoService {
 
   Future<DbCollection> _getSafeCollection() async {
     if (_db == null || !_db!.isConnected || _collection == null) {
-      await LogHelper.writeLog(
-        "INFO: Koleksi belum siap, mencoba rekoneksi...",
-        source: _source,
-        level: 3,
-      );
       await connect();
     }
     return _collection!;
   }
 
   Future<void> connect() async {
-    try {
-      final dbUri = dotenv.env['MONGODB_URI'];
-      if (dbUri == null) throw Exception("MONGODB_URI tidak ditemukan di .env");
+    final dbUri = dotenv.env['MONGODB_URI'];
 
-      _db = await Db.create(dbUri);
-
-      await _db!.open().timeout(
-        const Duration(seconds: 15),
-        onTimeout: () {
-          throw Exception(
-            "Koneksi Timeout. Cek IP Whitelist (0.0.0.0/0) atau Sinyal HP.",
-          );
-        },
-      );
-
-      _collection = _db!.collection('logs');
-
-      await LogHelper.writeLog(
-        "DATABASE: Terhubung & Koleksi Siap",
-        source: _source,
-        level: 2,
-      );
-    } catch (e) {
-      await LogHelper.writeLog(
-        "DATABASE: Gagal Koneksi - $e",
-        source: _source,
-        level: 1,
-      );
-      rethrow;
+    if (dbUri == null) {
+      throw Exception("MONGODB_URI tidak ditemukan");
     }
+
+    _db = await Db.create(dbUri);
+    await _db!.open();
+
+    _collection = _db!.collection('logs');
   }
 
-  Future<List<LogModel>> getLogs(String userId) async {
+  Future<List<LogModel>> getLogs(String teamId) async {
     try {
       final collection = await _getSafeCollection();
 
-      final List<Map<String, dynamic>> data =
-          await collection
-              .find(where.eq('userId', userId))
-              .toList();
+      final data = await collection
+          .find(where.eq('teamId', teamId))
+          .toList();
 
-      return data.map((json) => LogModel.fromMap(json)).toList();
+      return data.map((e) => LogModel.fromMap(e)).toList();
     } catch (e) {
       await LogHelper.writeLog(
-        "ERROR: Fetch Failed - $e",
+        "Fetch Error $e",
         source: _source,
         level: 1,
       );
@@ -80,76 +54,32 @@ class MongoService {
   }
 
   Future<void> insertLog(LogModel log) async {
-    try {
-      final collection = await _getSafeCollection();
-      await collection.insertOne(log.toMap());
-
-      await LogHelper.writeLog(
-        "SUCCESS: Data '${log.title}' Saved to Cloud",
-        source: _source,
-        level: 2,
-      );
-    } catch (e) {
-      await LogHelper.writeLog(
-        "ERROR: Insert Failed - $e",
-        source: _source,
-        level: 1,
-      );
-      rethrow;
-    }
+    final collection = await _getSafeCollection();
+    await collection.insertOne(log.toMap());
   }
 
   Future<void> updateLog(LogModel log) async {
-    try {
-      final collection = await _getSafeCollection();
-      if (log.id == null)
-        throw Exception("ID Log tidak ditemukan untuk update");
+    final collection = await _getSafeCollection();
 
-      await collection.replaceOne(where.id(log.id!), log.toMap());
-
-      await LogHelper.writeLog(
-        "DATABASE: Update '${log.title}' Berhasil",
-        source: _source,
-        level: 2,
-      );
-    } catch (e) {
-      await LogHelper.writeLog(
-        "DATABASE: Update Gagal - $e",
-        source: _source,
-        level: 1,
-      );
-      rethrow;
+    if (log.id == null) {
+      throw Exception("Log ID null");
     }
+
+    await collection.replaceOne(
+      where.id(ObjectId.fromHexString(log.id!)),
+      log.toMap(),
+    );
   }
 
-  Future<void> deleteLog(ObjectId id) async {
-    try {
-      final collection = await _getSafeCollection();
-      await collection.remove(where.id(id));
+  Future<void> deleteLog(String id) async {
+    final collection = await _getSafeCollection();
 
-      await LogHelper.writeLog(
-        "DATABASE: Hapus ID $id Berhasil",
-        source: _source,
-        level: 2,
-      );
-    } catch (e) {
-      await LogHelper.writeLog(
-        "DATABASE: Hapus Gagal - $e",
-        source: _source,
-        level: 1,
-      );
-      rethrow;
-    }
+    await collection.remove(
+      where.id(ObjectId.fromHexString(id)),
+    );
   }
 
   Future<void> close() async {
-    if (_db != null) {
-      await _db!.close();
-      await LogHelper.writeLog(
-        "DATABASE: Koneksi ditutup",
-        source: _source,
-        level: 2,
-      );
-    }
+    await _db?.close();
   }
 }

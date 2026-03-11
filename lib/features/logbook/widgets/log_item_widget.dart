@@ -3,24 +3,13 @@ import '../models/log_model.dart';
 
 class LogItemWidget extends StatelessWidget {
   final LogModel log;
-  final VoidCallback onEdit;
+  final VoidCallback? onEdit;
 
   const LogItemWidget({
     super.key,
     required this.log,
-    required this.onEdit,
+    this.onEdit,
   });
-
-  Color _getCategoryColor(String category) {
-    switch (category) {
-      case "Pekerjaan":
-        return Colors.deepPurple;
-      case "Urgent":
-        return const Color(0xFF690DA7);
-      default:
-        return const Color(0xFF6A5AE0);
-    }
-  }
 
   String _formatDate(String isoDate) {
     try {
@@ -51,95 +40,100 @@ class LogItemWidget extends StatelessWidget {
     }
   }
 
+  Color _categoryColor(String category) {
+    switch (category) {
+      case "Urgent":
+        return const Color.fromARGB(255, 111, 43, 170);
+      case "Pekerjaan":
+        return const Color.fromARGB(255, 172, 113, 255);
+      default:
+        return const Color.fromARGB(255, 206, 175, 255);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final color = _getCategoryColor(log.category);
+    final color = _categoryColor(log.category);
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.fromLTRB(16, 14, 12, 14),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: color,
-          width: 1.4,
-        ),
+        color: color,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: color, width: 1.6),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
+            color: color.withOpacity(0.35),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           )
         ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: color,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                log.category,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Text(
-                    log.title,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  log.title,
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
                 ),
-                IconButton(
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  icon: Icon(
-                    Icons.edit,
-                    size: 18,
+              ),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  log.category,
+                  style: TextStyle(
                     color: color,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 6),
+              if (onEdit != null)
+                IconButton(
+                  icon: const Icon(
+                    Icons.edit_rounded,
+                    size: 20,
+                    color: Colors.white,
                   ),
                   onPressed: onEdit,
-                ),
-              ],
+                )
+            ],
+          ),
+          const SizedBox(height: 2),
+          Text(
+            log.description,
+            style: const TextStyle(
+              fontSize: 14,
+              color: Colors.white,
+              height: 1.35,
             ),
-            const SizedBox(height: 4),
-            Text(
-              log.description,
-              style: const TextStyle(
-                fontSize: 13,
-                color: Colors.black87,
-              ),
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            "",
+          ),
+          Text(
+            _formatDate(log.date),
+            style: const TextStyle(
+              fontSize: 12,
+              color: Colors.white70,
             ),
-            const SizedBox(height: 6),
-            Text(
-              _formatDate(log.date),
-              style: const TextStyle(
-                fontSize: 11,
-                color: Colors.grey,
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
