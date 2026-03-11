@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/log_model.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 
 class LogItemWidget extends StatelessWidget {
   final LogModel log;
@@ -42,9 +43,9 @@ class LogItemWidget extends StatelessWidget {
 
   Color _categoryColor(String category) {
     switch (category) {
-      case "Urgent":
+      case "Electronic":
         return const Color.fromARGB(255, 111, 43, 170);
-      case "Pekerjaan":
+      case "Software":
         return const Color.fromARGB(255, 172, 113, 255);
       default:
         return const Color.fromARGB(255, 206, 175, 255);
@@ -86,8 +87,7 @@ class LogItemWidget extends StatelessWidget {
                 ),
               ),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(20),
@@ -113,19 +113,37 @@ class LogItemWidget extends StatelessWidget {
                 )
             ],
           ),
-          const SizedBox(height: 2),
-          Text(
-            log.description,
-            style: const TextStyle(
-              fontSize: 14,
-              color: Colors.white,
-              height: 1.35,
+          const SizedBox(height: 6),
+          MarkdownBody(
+            data: log.description,
+            shrinkWrap: true,
+            styleSheet: MarkdownStyleSheet(
+              p: const TextStyle(
+                fontSize: 14,
+                color: Colors.white,
+                height: 1.35,
+              ),
+              h1: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+              h2: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+              strong: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+              em: const TextStyle(
+                fontStyle: FontStyle.italic,
+                color: Colors.white,
+              ),
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
-            "",
-          ),
           Text(
             _formatDate(log.date),
             style: const TextStyle(

@@ -37,7 +37,7 @@ class LogModel {
     required this.authorId,
     required this.teamId,
     this.isPublic = false,
-    this.category = "Pribadi",
+    this.category = "Mechanical",
   });
 
   Map<String, dynamic> toMap() {
@@ -62,7 +62,7 @@ class LogModel {
       authorId: map['authorId'] ?? '',
       teamId: map['teamId'] ?? '',
       isPublic: map['isPublic'] ?? false,
-      category: map['category'] ?? 'Pribadi',
+      category: map['category'] ?? 'Mechanical',
     );
   }
 }

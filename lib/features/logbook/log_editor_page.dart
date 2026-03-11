@@ -26,7 +26,7 @@ class _LogEditorPageState extends State<LogEditorPage>
   late TabController _tabController;
 
   bool _isPublic = false;
-  String _category = "Pribadi";
+  String _category = "Mechanical";
 
   static const purple = Color.fromARGB(255, 104, 30, 184);
 
@@ -41,7 +41,7 @@ class _LogEditorPageState extends State<LogEditorPage>
         TextEditingController(text: widget.log?.description ?? '');
 
     _isPublic = widget.log?.isPublic ?? false;
-    _category = widget.log?.category ?? "Pribadi";
+    _category = widget.log?.category ?? "Mechanical";
 
     _tabController = TabController(length: 2, vsync: this);
 
@@ -147,16 +147,16 @@ class _LogEditorPageState extends State<LogEditorPage>
                   decoration: _inputDecoration("", hint: "Kategori"),
                   items: const [
                     DropdownMenuItem(
-                      value: "Pribadi",
-                      child: Text("Pribadi"),
+                      value: "Mechanical",
+                      child: Text("Mechanical"),
                     ),
                     DropdownMenuItem(
-                      value: "Urgent",
-                      child: Text("Urgent"),
+                      value: "Electronic",
+                      child: Text("Electronic"),
                     ),
                     DropdownMenuItem(
-                      value: "Pekerjaan",
-                      child: Text("Pekerjaan"),
+                      value: "Software",
+                      child: Text("Software"),
                     ),
                   ],
                   onChanged: (value) {
